@@ -29,7 +29,11 @@ def main():
 	#	print "\n"
 
 	#csp.revise(csp.domains, "0-3", "0-4")
-	print_sudoku_solution(csp.backtracking_search())
+	solution = csp.backtracking_search()
+	if solution == "failure":
+		print "failure"
+	else:
+		print_sudoku_solution(solution)
 
 # application entry point
 if __name__ == '__main__':

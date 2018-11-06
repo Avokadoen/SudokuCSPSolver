@@ -108,49 +108,44 @@ class CSP:
     should have a clean slate and not see any traces of the old
     assignments and inferences that took place in previous
     iterations of the loop.
-
-				consistent = False
-
-				for i in self.constraints[var]:
-					if value == i[0]:
-						consistent = True
-						break
-
-				if consistent:
-					print("kanskje")
-
-
-
-				currentAssignment[var].remove(value)
 	"""
 
     def backtrack(self, assignment):
 		var = self.select_unassigned_variable(assignment)
-		print(var)
+		#print(var)
 		if var == "done":
 			return assignment
 
 		for value in assignment[var]:
-			consistent = False
-			currentAssignment = copy.deepcopy(assignment)
 
-			for i in self.constraints[var]:
-				if value == i[0]:
-					consistent = True
+			consistent = True
+			currentAssignment = copy.deepcopy(assignment)
+			"""
+			count = 0
+			for i, j in self.constraints[var].items():
+				for k in j:
+					if value == k[0]:
+						count += 1
+			"""
+			for i, j in self.constraints[var].items():
+				if(len(currentAssignment[i]) == 1 and [value] == currentAssignment[i]):
+					consistent = False
 					break
 
-			if consistent:
+						#break
+
+			#if count == len(self.constraints[var]):
+			if consistent == True:
 				currentAssignment[var] = [value]
 				currentAssignment = self.inference(currentAssignment, self.get_all_neighboring_arcs(var))
 				if currentAssignment != False:
 					print("\n\n")
 					print_sudoku_solution(currentAssignment)
+
 					result = self.backtrack(currentAssignment)
 					if result != "failure":
 						return result
 
-
-			currentAssignment[var].remove(value)
 		return "failure"
 
 
@@ -167,20 +162,19 @@ class CSP:
     def inference(self, assignment, queue):
 		queulen = len(queue)
 		count = 0
-		newAssignment = assignment
+		reviseAssignment = assignment
 		while len(queue) > 0:
 			count += 1
 			currentIJ = queue.pop(0)
-			tempAssignment = self.revise(newAssignment, currentIJ[0], currentIJ[1])
-			if tempAssignment != False:
-				if len(tempAssignment[currentIJ[0]]) <= 0:
+			reviseAssignment = self.revise(assignment, currentIJ[0], currentIJ[1])
+			if reviseAssignment != False:
+				assignment = reviseAssignment
+				if len(reviseAssignment[currentIJ[0]]) <= 0:
 					return False
-				newAssignment = tempAssignment
 				k = self.get_all_neighboring_arcs(currentIJ[0])
 				k.remove((currentIJ[1], currentIJ[0]))
 				queue.append(k)
-		print(count)
-		return newAssignment
+		return reviseAssignment
 
 
     """The function 'Revise' from the pseudocode in the textbook.
@@ -193,20 +187,19 @@ class CSP:
     """
     def revise(self, assignment, i, j):
 		revised = False
-		newAssignment = assignment
 		for x in assignment[i]:
 			xYsatisfy = False
 			for y in assignment[j]:
-				if(x, y in self.constraints[i][j]):
+				if([x, y] in self.constraints[i][j]):
 					xYsatisfy = True
 					break
 			if xYsatisfy == False:
-				newAssignment[i].remove(x)
+				assignment[i].remove(x)
 				revised = True
 		if revised == True:
-			return newAssignment
-		return False
-
+			return assignment
+		else:
+			return False
 
 
 def create_map_coloring_csp():
