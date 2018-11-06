@@ -85,62 +85,102 @@ class CSP:
         # Call backtrack with the partial assignment 'assignment'
         return self.backtrack(assignment)
 
+
+    """The function 'Backtrack' from the pseudocode in the
+    textbook.
+
+    The function is called recursively, with a partial assignment of
+    values 'assignment'. 'assignment' is a dictionary that contains
+    a list of all legal values for the variables that have *not* yet
+    been decided, and a list of only a single value for the
+    variables that *have* been decided.
+
+    When all of the variables in 'assignment' have lists of length
+    one, i.e. when all variables have been assigned a value, the
+    function should return 'assignment'. Otherwise, the search
+    should continue. When the function 'inference' is called to run
+    the AC-3 algorithm, the lists of legal values in 'assignment'
+    should get reduced as AC-3 discovers illegal values.
+
+    IMPORTANT: For every iteration of the for-loop in the
+    pseudocode, you need to make a deep copy of 'assignment' into a
+    new variable before changing it. Every iteration of the for-loop
+    should have a clean slate and not see any traces of the old
+    assignments and inferences that took place in previous
+    iterations of the loop.
+
+				consistent = False
+
+				for i in self.constraints[var]:
+					if value == i[0]:
+						consistent = True
+						break
+
+				if consistent:
+					print("kanskje")
+
+
+
+				currentAssignment[var].remove(value)
+	"""
+
     def backtrack(self, assignment):
-        """The function 'Backtrack' from the pseudocode in the
-        textbook.
+		var = self.select_unassigned_variable(assignment)
+		print(var)
+		if var == "done":
+			return assignment
 
-        The function is called recursively, with a partial assignment of
-        values 'assignment'. 'assignment' is a dictionary that contains
-        a list of all legal values for the variables that have *not* yet
-        been decided, and a list of only a single value for the
-        variables that *have* been decided.
+		for value in assignment[var]:
+			consistent = False
+			currentAssignment = copy.deepcopy(assignment)
 
-        When all of the variables in 'assignment' have lists of length
-        one, i.e. when all variables have been assigned a value, the
-        function should return 'assignment'. Otherwise, the search
-        should continue. When the function 'inference' is called to run
-        the AC-3 algorithm, the lists of legal values in 'assignment'
-        should get reduced as AC-3 discovers illegal values.
+			for i in self.constraints[var]:
+				if value == i[0]:
+					consistent = True
+					break
 
-        IMPORTANT: For every iteration of the for-loop in the
-        pseudocode, you need to make a deep copy of 'assignment' into a
-        new variable before changing it. Every iteration of the for-loop
-        should have a clean slate and not see any traces of the old
-        assignments and inferences that took place in previous
-        iterations of the loop.
-        """
-        # TODO: IMPLEMENT THIS
-
+			if consistent:
+				currentAssignment[var] = [value]
+				currentAssignment = self.inference(currentAssignment, self.get_all_neighboring_arcs(var))
+				if currentAssignment != False:
+					print("\n\n")
+					print_sudoku_solution(currentAssignment)
+					result = self.backtrack(currentAssignment)
+					if result != "failure":
+						return result
 
 
-        pass
+			currentAssignment[var].remove(value)
+		return "failure"
+
+
+
 
     def select_unassigned_variable(self, assignment):
-        """The function 'Select-Unassigned-Variable' from the pseudocode
-        in the textbook. Should return the name of one of the variables
-        in 'assignment' that have not yet been decided, i.e. whose list
-        of legal values has a length greater than one.
-        """
-        # TODO: IMPLEMENT THIS
-        pass
+		for i in assignment:
+			if len(assignment[i]) > 1:
+				return i
 
-	"""The function 'AC-3' from the pseudocode in the textbook.
-	'assignment' is the current partial assignment, that contains
-	the lists of legal values for each undecided variable. 'queue'
-	is the initial queue of arcs that should be visited.
-	"""
+		return "done"
+
+
     def inference(self, assignment, queue):
 		queulen = len(queue)
+		count = 0
+		newAssignment = assignment
 		while len(queue) > 0:
+			count += 1
 			currentIJ = queue.pop(0)
-			if self.revise(assignment, currentIJ[0], currentIJ[1]):
-				if len(assignment[currentIJ[0]]) <= 0:
+			tempAssignment = self.revise(newAssignment, currentIJ[0], currentIJ[1])
+			if tempAssignment != False:
+				if len(tempAssignment[currentIJ[0]]) <= 0:
 					return False
+				newAssignment = tempAssignment
 				k = self.get_all_neighboring_arcs(currentIJ[0])
 				k.remove((currentIJ[1], currentIJ[0]))
 				queue.append(k)
-
-		return True
+		print(count)
+		return newAssignment
 
 
     """The function 'Revise' from the pseudocode in the textbook.
@@ -153,6 +193,7 @@ class CSP:
     """
     def revise(self, assignment, i, j):
 		revised = False
+		newAssignment = assignment
 		for x in assignment[i]:
 			xYsatisfy = False
 			for y in assignment[j]:
@@ -160,10 +201,11 @@ class CSP:
 					xYsatisfy = True
 					break
 			if xYsatisfy == False:
-				assignment[i].remove(x)
+				newAssignment[i].remove(x)
 				revised = True
-
-		return revised
+		if revised == True:
+			return newAssignment
+		return False
 
 
 
