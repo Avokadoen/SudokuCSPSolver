@@ -111,7 +111,7 @@ class CSP:
         """
         # TODO: IMPLEMENT THIS
 
-		
+
 
         pass
 
@@ -124,26 +124,48 @@ class CSP:
         # TODO: IMPLEMENT THIS
         pass
 
+	"""The function 'AC-3' from the pseudocode in the textbook.
+	'assignment' is the current partial assignment, that contains
+	the lists of legal values for each undecided variable. 'queue'
+	is the initial queue of arcs that should be visited.
+	"""
     def inference(self, assignment, queue):
-        """The function 'AC-3' from the pseudocode in the textbook.
-        'assignment' is the current partial assignment, that contains
-        the lists of legal values for each undecided variable. 'queue'
-        is the initial queue of arcs that should be visited.
-        """
-        # TODO: IMPLEMENT THIS
-        pass
+		queulen = len(queue)
+		while len(queue) > 0:
+			currentIJ = queue.pop(0)
+			if self.revise(assignment, currentIJ[0], currentIJ[1]):
+				if len(assignment[currentIJ[0]]) <= 0:
+					return False
+				k = self.get_all_neighboring_arcs(currentIJ[0])
+				k.remove((currentIJ[1], currentIJ[0]))
+				queue.append(k)
 
+		return True
+
+
+    """The function 'Revise' from the pseudocode in the textbook.
+    'assignment' is the current partial assignment, that contains
+    the lists of legal values for each undecided variable. 'i' and
+    'j' specifies the arc that should be visited. If a value is
+    found in variable i's domain that doesn't satisfy the constraint
+    between i and j, the value should be deleted from i's list of
+    legal values in 'assignment'.
+    """
     def revise(self, assignment, i, j):
-        """The function 'Revise' from the pseudocode in the textbook.
-        'assignment' is the current partial assignment, that contains
-        the lists of legal values for each undecided variable. 'i' and
-        'j' specifies the arc that should be visited. If a value is
-        found in variable i's domain that doesn't satisfy the constraint
-        between i and j, the value should be deleted from i's list of
-        legal values in 'assignment'.
-        """
-        # TODO: IMPLEMENT THIS
-        pass
+		revised = False
+		for x in assignment[i]:
+			xYsatisfy = False
+			for y in assignment[j]:
+				if(x, y in self.constraints[i][j]):
+					xYsatisfy = True
+					break
+			if xYsatisfy == False:
+				assignment[i].remove(x)
+				revised = True
+
+		return revised
+
+
 
 def create_map_coloring_csp():
     """Instantiate a CSP representing the map coloring problem from the

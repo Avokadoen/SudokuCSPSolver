@@ -28,6 +28,8 @@ def main():
 	#	print csp.constraints[var]
 	#	print "\n"
 
+	#csp.revise(csp.domains, "0-3", "0-4")
+	csp.backtracking_search()
 
 # application entry point
 if __name__ == '__main__':
