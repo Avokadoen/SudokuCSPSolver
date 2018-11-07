@@ -23,17 +23,13 @@ def main():
 		file = "files/veryhard.txt"
 
 	csp = create_sudoku_csp(file)
-	#for var in csp.variables:
-	#	print var
-	#	print csp.constraints[var]
-	#	print "\n"
 
-	#csp.revise(csp.domains, "0-3", "0-4")
 	solution = csp.backtracking_search()
 	if solution == "failure":
 		print "failure"
 	else:
 		print_sudoku_solution(solution)
+
 
 # application entry point
 if __name__ == '__main__':
