@@ -72,6 +72,10 @@ class CSP:
         """This functions starts the CSP solver and returns the found
         solution.
         """
+        # reset mesure of performance
+        self.backtrackCalls = 0
+        self.backtrackFails = 0
+
         # Make a so-called "deep copy" of the dictionary containing the
         # domains of the CSP variables. The deep copy is required to
         # ensure that any changes made to 'assignment' does not have any
@@ -111,6 +115,7 @@ class CSP:
 	"""
 
     def backtrack(self, assignment):
+		self.backtrackCalls += 1
 		var = self.select_unassigned_variable(assignment)
 		if var == "done":
 			return assignment
@@ -132,13 +137,16 @@ class CSP:
 				if infer != False:
 					result = self.backtrack(currentAssignment)
 					if result != "failure":
+						self.backtrackFails += 1
 						return result
 				else:
 					currentAssignment = backUp
 
 		return "failure"
 
-
+    def backtrack_performance(self):
+        print("\nbacktrack was called %d time(s)" % self.backtrackCalls)
+        print("backtrack failed %d time(s)\n" % self.backtrackFails)
 
 
     def select_unassigned_variable(self, assignment):

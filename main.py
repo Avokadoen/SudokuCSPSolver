@@ -28,7 +28,9 @@ def main():
 	if solution == "failure":
 		print "failure"
 	else:
+		csp.backtrack_performance()
 		print_sudoku_solution(solution)
+
 
 
 # application entry point
