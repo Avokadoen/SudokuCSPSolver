@@ -117,31 +117,38 @@ class CSP:
     def backtrack(self, assignment):
 		self.backtrackCalls += 1
 		var = self.select_unassigned_variable(assignment)
+
 		if var == "done":
 			return assignment
 
 		for value in assignment[var]:
 			currentAssignment = copy.deepcopy(assignment)
 
+			# check if the current value is legal according to sudoku rules (consistent)
 			consistent = True
 			for i, j in self.constraints[var].items():
 				if(len(currentAssignment[i]) == 1 and [value] == currentAssignment[i]):
 					consistent = False
 					break
 
+			# if value was legal
 			if consistent == True:
-				currentAssignment[var] = [value]
-				backUp = currentAssignment
-				currentAssignment, infer = self.inference(currentAssignment, self.get_all_neighboring_arcs(var))
 
-				if infer != False:
+				# save the value in our assignments
+				currentAssignment[var] = [value]
+				tempAssignment, infer = self.inference(currentAssignment, self.get_all_neighboring_arcs(var))
+
+				# if new assignment is valid
+				if infer == True:
+					currentAssignment = tempAssignment
+
+					# do a recursion and check if it resultet in the answer is valid
 					result = self.backtrack(currentAssignment)
 					if result != "failure":
-						self.backtrackFails += 1
 						return result
-				else:
-					currentAssignment = backUp
 
+		# if the calls resulted in an invalid answer
+		self.backtrackFails += 1
 		return "failure"
 
     def backtrack_performance(self):
@@ -150,32 +157,43 @@ class CSP:
 
 
     def select_unassigned_variable(self, assignment):
+		# loop all variables and find if one is capable of multiple states
 		for i in assignment:
 			if len(assignment[i]) > 1:
 				return i
 
+		# return done if all variables are set
 		return "done"
 
 
     def inference(self, assignment, queue):
-		queulen = len(queue)
-		count = 0
+		# make sure there is no reference of assignment
 		reviseAssignment = assignment
+
 		while queue:
-			count += 1
+			# get I and J
 			neighbourIJ = queue.pop(0)
-			backUp = reviseAssignment
-			reviseAssignment, revise  = self.revise(reviseAssignment, neighbourIJ[0], neighbourIJ[1])
-			if revise != False:
-				assignment = reviseAssignment
+
+			# do a revision on the neighbourIJ
+			tempAssignment, revise  = self.revise(reviseAssignment, neighbourIJ[0], neighbourIJ[1])
+
+			# if we did revise
+			if revise == True:
+				reviseAssignment = tempAssignment
+
+				# if assignment is invalid after revise
 				if len(reviseAssignment[neighbourIJ[0]]) <= 0:
 					return reviseAssignment, False
 
+				# get neighbour of I
 				neighbourK = self.get_all_neighboring_arcs(neighbourIJ[0])
+
+				# remove duplicate
 				neighbourK.remove((neighbourIJ[1], neighbourIJ[0]))
+
+				# add k neighbours into queue
 				queue += neighbourK
-			else:
-				reviseAssignment = backUp
+
 		return reviseAssignment, True
 
 
@@ -188,22 +206,26 @@ class CSP:
     legal values in 'assignment'.
     """
     def revise(self, assignment, i, j):
+		# we have not revised and make sure we don't have ref of assignment
 		revised = False
 		assignment = assignment
+
 		for x in assignment[i]:
 			xYsatisfy = False
 			for y in assignment[j]:
 				for constraint in self.constraints[i][j]:
+					# if x, y is in constraints of i j / allowed
 					if (x, y) == constraint:
 						xYsatisfy = True
 						break
+
+			# if there is no combination of x, y in current constraints
 			if xYsatisfy == False:
 				assignment[i].remove(x)
 				revised = True
-		if revised == True:
-			return assignment, True
-		else:
-			return assignment, False
+
+		return assignment, revised
+
 
 
 def create_map_coloring_csp():
