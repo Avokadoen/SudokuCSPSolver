@@ -1,5 +1,7 @@
 # AIAssignment5CSP
-made in unbutu 16.04
+Constraint Satisfaction Solver for sudoku 
+
+made and tested in unbutu 16.04
 
 ## how to run
 do "python main.py"
